@@ -1,5 +1,5 @@
 # VariGrow
-### Variational Architecture Growing for Task-Agnostic Continual Learning based on Bayesian Novelty
+### [Variational Architecture Growing for Task-Agnostic Continual Learning based on Bayesian Novelty](https://proceedings.mlr.press/v162/ardywibowo22a.html)
 
 ![Architecture Diagram](./images/diagram.png)
 
