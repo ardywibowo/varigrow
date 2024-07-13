@@ -52,11 +52,11 @@ def train(cfg, model, optimizer, device, train_loader):
         if accu is not None:
             accu.add(logits_inlier.detach(), targets)
             
-        loss = torch.zeros([1]).cuda()
+        loss = torch.zeros([1]).to(model.device)
         loss_ce = _compute_loss(cfg, logits_inlier, targets, device)
         loss += loss_ce
         
-        loss_novelty = torch.zeros([1]).cuda()
+        loss_novelty = torch.zeros([1]).to(model.device)
         if cfg["novelty_detection"]["enable"]:
             # Calibration head
             if cfg["novelty_detection"]["calibration_head"]:

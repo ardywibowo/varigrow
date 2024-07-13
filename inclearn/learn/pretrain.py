@@ -77,7 +77,7 @@ def train(cfg, model, optimizers, device, train_loader, tensorboard=None):
         for optimizer in optimizers.values():
             optimizer.zero_grad()
         
-        loss_outlier = torch.zeros([1]).cuda()
+        loss_outlier = torch.zeros([1]).to(model.device)
         if cfg["novelty_detection"]["enable"]:
             # Calibration head
             if cfg["novelty_detection"]["calibration_head"]:

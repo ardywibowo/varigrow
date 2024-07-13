@@ -347,11 +347,11 @@ class IncModel(IncrementalLearner):
     def _compute_cls_loss(self, targets, outputs, old_classes, new_classes):
         loss_ce = F.cross_entropy(outputs['logit'], targets)
         
-        loss_ce_calibrated = torch.zeros([1]).cuda()
+        loss_ce_calibrated = torch.zeros([1]).to(targets.device)
         if outputs['calibrated_logit'] is not None:
             loss_ce_calibrated = F.cross_entropy(outputs['calibrated_logit'], targets)
 
-        loss_aux = torch.zeros([1]).cuda()
+        loss_aux = torch.zeros([1]).to(targets.device)
         if outputs['aux_logit'] is not None:
             aux_targets = targets.clone()
             if self._cfg["aux_n+1"]:
@@ -469,7 +469,7 @@ class IncModel(IncrementalLearner):
             generator_out = self._generator_from_loader(self._dataloader_out)
             for inliers, targets in loader:
                 outliers, _ = next(generator_out)
-                inliers, targets, outliers = inliers.cuda(), targets.cuda(), outliers.cuda()
+                inliers, targets, outliers = inliers.to(self._device), targets.to(self._device), outliers.to(self._device)
                 inputs = torch.cat((inliers, outliers), 0)
                 
                 if loss_type == "bce":
@@ -494,7 +494,7 @@ class IncModel(IncrementalLearner):
                 m_out = self._cfg['novelty_detection']['m_out']
                 loss_novelty = energy_criterion(calibration_inlier, calibration_outlier, m_in, m_out)
                 
-                loss = torch.zeros([1]).cuda()
+                loss = torch.zeros([1]).to(self._device)
                 loss += loss_ce
                 
                 if self._cfg["novelty_detection"]["enable"]:
@@ -514,7 +514,7 @@ class IncModel(IncrementalLearner):
                 test_count = 0.0
                 with torch.no_grad():
                     for inliers, targets in test_loader:
-                        outputs = self._parallel_network(inliers.cuda())['logit']
+                        outputs = self._parallel_network(inliers.to(self._device))['logit']
                         _, preds = outputs.max(1)
                         test_correct += (preds.cpu() == targets).sum().item()
                         test_count += inliers.size(0)

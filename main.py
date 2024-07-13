@@ -12,8 +12,9 @@ import random
 from easydict import EasyDict as edict
 from tensorboardX import SummaryWriter
 
-repo_name = 'growing-pruning'
-base_dir = osp.realpath(".")[:osp.realpath(".").index(repo_name) + len(repo_name)]
+# repo_name = 'growing-pruning'
+# base_dir = osp.realpath(".")[:osp.realpath(".").index(repo_name) + len(repo_name)]
+base_dir = osp.realpath(".")
 sys.path.insert(0, base_dir)
 
 from sacred import Experiment

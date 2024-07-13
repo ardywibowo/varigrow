@@ -64,7 +64,7 @@ def finetune_last_layer(
         generator_out = network.module._generator_from_loader(network.module._dataloader_out)
         for inliers, targets in loader:
             outliers, _ = next(generator_out)
-            inliers, targets, outliers = inliers.cuda(), targets.cuda(), outliers.cuda()
+            inliers, targets, outliers = inliers.to(network.device), targets.to(network.device), outliers.to(network.device)
             inputs = torch.cat((inliers, outliers), 0)
             
             if loss_type == "bce":
@@ -89,7 +89,7 @@ def finetune_last_layer(
             m_out = network.module._cfg['novelty_detection']['m_out']
             loss_novelty = energy_criterion(calibration_inlier, calibration_outlier, m_in, m_out)
             
-            loss = torch.zeros([1]).cuda()
+            loss = torch.zeros([1]).to(network.device)
             loss += loss_ce
             
             if network.module._cfg["novelty_detection"]["enable"]:
@@ -109,7 +109,7 @@ def finetune_last_layer(
             test_count = 0.0
             with torch.no_grad():
                 for inliers, targets in test_loader:
-                    outputs = network(inliers.cuda())['logit']
+                    outputs = network(inliers.to(network.device))['logit']
                     _, preds = outputs.max(1)
                     test_correct += (preds.cpu() == targets).sum().item()
                     test_count += inliers.size(0)
@@ -137,7 +137,7 @@ def extract_features(model, loader):
     model.eval()
     with torch.no_grad():
         for _inputs, _targets in loader:
-            _inputs = _inputs.cuda()
+            _inputs = _inputs.to(model.device)
             _targets = _targets.numpy()
             _features = model(_inputs)['feature'].detach().cpu().numpy()
             features.append(_features)
@@ -168,7 +168,7 @@ def update_classes_mean(network, inc_dataset, n_classes, task_size, share_memory
     network.eval()
     with torch.no_grad():
         for x, y in loader:
-            feat = network(x.cuda())['feature']
+            feat = network(x.to(network.device))['feature']
             for lbl in torch.unique(y):
                 class_means[lbl] += feat[y == lbl].sum(0).cpu().numpy()
                 count[lbl] += feat[y == lbl].shape[0]

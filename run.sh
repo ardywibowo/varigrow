@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-name='10scifar100_sanity'
+name='demo'
 debug='1'
 comments='None'
-expid='sanity'
+expid='demo'
 
 
 if [ ${debug} -eq '0' ]; then

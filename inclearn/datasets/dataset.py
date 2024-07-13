@@ -26,6 +26,8 @@ def get_dataset(dataset_name):
         return TinyImageNet
     elif dataset_name == "places365":
         return Places365
+    elif dataset_name == "cifar10-noinc":
+        return datasets.cifar.CIFAR10
     else:
         raise NotImplementedError("Unknown dataset {}.".format(dataset_name))
 

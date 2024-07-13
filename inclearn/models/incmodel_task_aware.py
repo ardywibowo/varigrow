@@ -674,7 +674,7 @@ class IncModel(IncrementalLearner):
 
         loss_novelty = loss_novelty + loss_ce_calibrated
         if torch.isnan(loss_novelty):
-            loss_novelty = torch.zeros([1]).cuda()
+            loss_novelty = torch.zeros([1]).to(self._device)
 
         return loss_ce, loss_aux, loss_novelty
 
@@ -717,7 +717,7 @@ class IncModel(IncrementalLearner):
     def _compute_cls_loss(self, targets, outputs, outhead_classes, inhead_classes):
         loss_ce = F.cross_entropy(outputs['logit'], targets)
         
-        loss_ce_calibrated = torch.zeros([1]).cuda()
+        loss_ce_calibrated = torch.zeros([1]).to(self._device)
         if outputs['calibrated_logit'] is not None:
             targets_calib = targets.clone()
             outputs_calib = outputs['calibrated_logit']
@@ -728,9 +728,9 @@ class IncModel(IncrementalLearner):
             
             loss_ce_calibrated = F.cross_entropy(outputs_calib, targets_calib)
             if torch.isnan(loss_ce_calibrated):
-                loss_ce_calibrated = torch.zeros([1]).cuda()
+                loss_ce_calibrated = torch.zeros([1]).to(self._device)
 
-        loss_aux = torch.zeros([1]).cuda()
+        loss_aux = torch.zeros([1]).to(self._device)
         if outputs['aux_logit'] is not None:
             targets_aux = targets.clone()
             if self._cfg["aux_n+1"]:
@@ -856,7 +856,7 @@ class IncModel(IncrementalLearner):
             generator_out = self._generator_from_loader(self._dataloader_out)
             for inliers, targets in loader:
                 outliers, _ = next(generator_out)
-                inliers, targets, outliers = inliers.cuda(), targets.cuda(), outliers.cuda()
+                inliers, targets, outliers = inliers.to(self._device), targets.to(self._device), outliers.to(self._device)
                 inputs = torch.cat((inliers, outliers), 0)
                 
                 inhead_classes = tensor_is_in(targets, classes_in_head)
@@ -884,7 +884,7 @@ class IncModel(IncrementalLearner):
                 m_out = self._cfg['novelty_detection']['m_out']
                 loss_novelty = energy_criterion(calibration_inlier, calibration_outlier, m_in, m_out)
                 
-                loss = torch.zeros([1]).cuda()
+                loss = torch.zeros([1]).to(self._device)
                 loss = loss + loss_ce
                 
                 # if self._cfg["novelty_detection"]["enable"]:
@@ -904,7 +904,7 @@ class IncModel(IncrementalLearner):
                 test_count = 0.0
                 with torch.no_grad():
                     for inliers, targets in test_loader:
-                        outputs = self._parallel_network(inliers.cuda())['logit']
+                        outputs = self._parallel_network(inliers.to(self._device))['logit']
                         _, preds = outputs.max(1)
                         test_correct += (preds.cpu() == targets).sum().item()
                         test_count += inliers.size(0)

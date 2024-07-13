@@ -6,10 +6,10 @@ from torch.optim.lr_scheduler import CosineAnnealingLR
 
 
 class BiC(nn.Module):
-    def __init__(self, lr, scheduling, lr_decay_factor, weight_decay, batch_size, epochs):
+    def __init__(self, lr, scheduling, lr_decay_factor, weight_decay, batch_size, epochs, device):
         super(BiC, self).__init__()
-        self.beta = torch.nn.Parameter(torch.ones(1))  #.cuda()
-        self.gamma = torch.nn.Parameter(torch.zeros(1))  #.cuda()
+        self.beta = torch.nn.Parameter(torch.ones(1))
+        self.gamma = torch.nn.Parameter(torch.zeros(1))
         self.lr = lr
         self.scheduling = scheduling
         self.lr_decay_factor = lr_decay_factor
@@ -18,6 +18,7 @@ class BiC(nn.Module):
         self.batch_size = batch_size
         self.epochs = epochs
         self.bic_flag = False
+        self.device = device
 
     def reset(self, lr=None, scheduling=None, lr_decay_factor=None, weight_decay=None, n_classes=-1):
         with torch.no_grad():
@@ -31,11 +32,11 @@ class BiC(nn.Module):
                 weight_decay = self.weight_decay
             if self.class_specific:
                 assert n_classes != -1
-                self.beta = torch.nn.Parameter(torch.ones(n_classes).cuda())
-                self.gamma = torch.nn.Parameter(torch.zeros(n_classes).cuda())
+                self.beta = torch.nn.Parameter(torch.ones(n_classes).to(self.device))
+                self.gamma = torch.nn.Parameter(torch.zeros(n_classes).to(self.device))
             else:
-                self.beta = torch.nn.Parameter(torch.ones(1).cuda())
-                self.gamma = torch.nn.Parameter(torch.zeros(1).cuda())
+                self.beta = torch.nn.Parameter(torch.ones(1).to(self.device))
+                self.gamma = torch.nn.Parameter(torch.zeros(1).to(self.device))
             self.optimizer = torch.optim.SGD([self.beta, self.gamma], lr=lr, momentum=0.9, weight_decay=weight_decay)
             # self.scheduler = CosineAnnealingLR(self.optimizer, 10)
             self.scheduler = torch.optim.lr_scheduler.MultiStepLR(self.optimizer, scheduling, gamma=lr_decay_factor)
@@ -44,8 +45,8 @@ class BiC(nn.Module):
         preds, targets = [], []
         with torch.no_grad():
             for (x, y) in loader:
-                preds.append(model(x.cuda())['logit'])
-                targets.append(y.cuda())
+                preds.append(model(x.to(self.device))['logit'])
+                targets.append(y.to(self.device))
         return torch.cat((preds)), torch.cat((targets))
 
     def update(self, logger, task_size, model, loader, loss_criterion=None):
