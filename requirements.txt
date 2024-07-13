@@ -1,0 +1,14 @@
+tensorboardX
+torch
+easydict
+sacred
+numpy
+pandas
+torchvision
+scikit-learn
+scipy
+tqdm
+matplotlib
+pillow
+pyyaml
+tensorboard
