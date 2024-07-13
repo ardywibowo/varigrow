@@ -12,3 +12,6 @@ matplotlib
 pillow
 pyyaml
 tensorboard
+opencv-python
+albumentations
+pytorch-ignite
